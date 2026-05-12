@@ -96,16 +96,3 @@ Several tickets demonstrate HIPAA-adjacent thinking even in a non-PHI lab:
 
 These habits transfer directly to real healthcare IT environments.
 
-## Talking Points for Interviews
-
-> "While building my lab I documented sample tickets I worked through — 
-> passwords, lockouts, provisioning, deprovisioning, a couple of 
-> escalation scenarios. I treat each like a real ticket: verify identity 
-> first, document the issue, work through resolution, log what I did, 
-> and close with the user. I've practiced password resets, account 
-> unlocks, group membership changes, new user provisioning, and one 
-> scenario where I had to escalate to L2 because it was multi-user 
-> impact beyond my scope."
-
-This answer demonstrates process discipline, tool fluency, and self-aware 
-scope management — three things hiring managers actually want to hear.
