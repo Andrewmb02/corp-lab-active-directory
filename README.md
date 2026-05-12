@@ -17,7 +17,7 @@ support roles.
 
 ## Architecture
 
-\`\`\`mermaid
+```mermaid
 graph TB
     Internet[Internet]
     Home[Home Workstation<br/>Restricted IP Access]
@@ -43,7 +43,7 @@ graph TB
     style DC fill:#0078D4,color:#fff
     style Client fill:#107C10,color:#fff
     style NSG fill:#D83B01,color:#fff
-\`\`\`
+```
 
 ## Environment Specifications
 
