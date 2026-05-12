@@ -45,7 +45,7 @@ Domain join fails if the client cannot resolve the domain via DNS. The
 client must use the domain controller as its DNS server.
 
 **Via PowerShell:**
-\`\`\`powershell
+```powershell
 # Identify network adapter
 Get-NetAdapter
 
@@ -54,7 +54,7 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 10.0.1.4
 
 # Verify resolution works
 Resolve-DnsName corp.local
-\`\`\`
+```
 
 **Via GUI:**
 1. Win+R → `ncpa.cpl` → Enter
@@ -67,9 +67,9 @@ Resolve-DnsName corp.local
 ## Domain Join
 
 **Via PowerShell:**
-\`\`\`powershell
+```powershell
 Add-Computer -DomainName "corp.local" -Credential (Get-Credential) -Restart
-\`\`\`
+```
 
 Prompts for credentials of a user with domain join rights (any Domain 
 Admin, e.g., `CORP\labadmin`). VM reboots automatically on success.
@@ -90,10 +90,10 @@ the user account is not authorized for remote login" until added to the
 local Remote Desktop Users group.
 
 **Fix:**
-\`\`\`powershell
+```powershell
 # On CLIENT01, as local administrator:
 Add-LocalGroupMember -Group "Remote Desktop Users" -Member "CORP\All-Employees"
-\`\`\`
+```
 
 This grants RDP access to all domain users (via All-Employees membership) 
 without making them administrators.
