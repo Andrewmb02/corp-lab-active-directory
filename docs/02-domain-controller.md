@@ -43,19 +43,19 @@ Windows breaks Azure's networking.
 3. **RDP in** as local admin (.\labadmin)
 4. **Install AD DS role** via PowerShell:
 
-\`\`\`powershell
+```powershell
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
-\`\`\`
+```
 
 5. **Promote to domain controller** creating new forest:
 
-\`\`\`powershell
-Install-ADDSForest \`
-    -DomainName "corp.local" \`
-    -DomainNetbiosName "CORP" \`
-    -InstallDns \`
+```powershell
+Install-ADDSForest `
+    -DomainName "corp.local" `
+    -DomainNetbiosName "CORP" `
+    -InstallDns `
     -Force
-\`\`\`
+```
 
 This prompts for a DSRM (Directory Services Restore Mode) password. The 
 DSRM password is intentionally separate from the domain admin password — 
@@ -66,14 +66,14 @@ recovery environment.
 6. **VM reboots automatically** when promotion completes
 7. **Verify domain is operational**:
 
-\`\`\`powershell
+```powershell
 Get-ADDomain | Select Name, Forest, DomainMode
 Get-ADDomainController | Select Name, Domain, IPv4Address
-\`\`\`
+```
 
 ## Expected Output
 
-\`\`\`
+```
 Name    Forest      DomainMode
 ----    ------      ----------
 corp    corp.local  Windows2025Domain
@@ -81,7 +81,7 @@ corp    corp.local  Windows2025Domain
 Name    Domain      IPv4Address
 ----    ------      -----------
 DC01    corp.local  10.0.1.4
-\`\`\`
+```
 
 ## Why PowerShell Over GUI
 
