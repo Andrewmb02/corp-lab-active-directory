@@ -71,7 +71,7 @@ graph TB
 
 ## Repository Structure
 
-\`\`\`
+```
 corp-lab-active-directory/
 ├── README.md                          ← You are here
 ├── docs/
@@ -89,7 +89,7 @@ corp-lab-active-directory/
 │   ├── audit-permissions.ps1          ← NTFS permission audit
 │   └── reset-lab-passwords.ps1        ← Password reset utility
 └── screenshots/                       ← Visual evidence (TBD)
-\`\`\`
+```
 
 ## Quick Stats
 
