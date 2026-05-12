@@ -8,7 +8,7 @@ own data, with a company-wide read-only share for general announcements.
 
 ## Share Architecture
 
-\`\`\`mermaid
+```mermaid
 graph LR
     subgraph SecurityGroups[Security Groups]
         Sales[Sales-Team]
@@ -19,10 +19,10 @@ graph LR
     end
     
     subgraph Shares[File Shares on DC01]
-        SalesShare[\\DC01\Sales<br/>Modify]
-        EngShare[\\DC01\Engineering<br/>Modify]
-        HRShare[\\DC01\HR<br/>Modify - sensitive]
-        PublicShare[\\DC01\Public<br/>Two-tier access]
+       SalesShare[Sales Share<br/>Modify]
+    EngShare[Engineering Share<br/>Modify]
+    HRShare[HR Share<br/>Modify - sensitive]
+    PublicShare[Public Share<br/>Two-tier access]
     end
     
     Sales --> SalesShare
@@ -30,7 +30,7 @@ graph LR
     HR --> HRShare
     IT -.->|Modify| PublicShare
     All -.->|Read Only| PublicShare
-\`\`\`
+```
 
 ## Permission Layering
 
@@ -101,7 +101,7 @@ permission-sprawl mistakes in real enterprises.
 
 ## Verification
 
-\`\`\`powershell
+```powershell
 # List all custom shares
 Get-SmbShare | Where-Object { $_.Path -like "C:\Shares\*" } | 
     Select Name, Path
@@ -115,7 +115,7 @@ Get-SmbShare | Where-Object { $_.Path -like "C:\Shares\*" } |
         $_.IdentityReference -notlike "CREATOR OWNER"
     } | Select IdentityReference, FileSystemRights, IsInherited
 }
-\`\`\`
+```
 
 Each share should show ONLY the appropriate department group with 
 `IsInherited: False` — meaning permissions are explicit, not inherited 
