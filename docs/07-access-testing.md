@@ -64,13 +64,6 @@ A complete authentication and authorization flow:
 4. **Authorization** — NTFS permissions enforced based on token
 5. **Differential access** — same shares, different users, different results
 
-When a hiring manager asks about access control, the talking point is:
-> "I tested the lab end-to-end by logging in as users from different 
-> departments. Each user could access their department share but was 
-> denied at others. The Public share applied read-only to everyone with 
-> write access only to IT. This validated my permission design end-to-end 
-> against the actual security model."
-
 ## Interview Demonstration
 
 The most visually compelling tests are:
