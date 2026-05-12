@@ -102,7 +102,7 @@ corp-lab-active-directory/
 
 ## Status
 
-🚧 Lab is operational. Documentation is being expanded with detailed 
+Lab is operational. Documentation is being expanded with detailed 
 walkthroughs and reflections.
 
 ## About
