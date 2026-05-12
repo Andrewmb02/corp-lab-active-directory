@@ -40,7 +40,7 @@ Naming convention: first initial + last name, lowercase. UPN format:
 
 ## Security Group Design
 
-\`\`\`mermaid
+```mermaid
 graph LR
     subgraph Users[Users]
         smitchell[smitchell]
@@ -64,7 +64,7 @@ graph LR
     afoster --> AllEmp
     jpark --> HRTeam
     jpark --> AllEmp
-\`\`\`
+```
 
 | Group | Members | Purpose |
 |-------|---------|---------|
@@ -96,8 +96,8 @@ A 9th user (Lisa Anderson) was created via the ADUC GUI to practice the
 manual workflow. Both methods are core IT support skills.
 
 ## Verification
+```powershell
 
-\`\`\`powershell
 # Confirm OU structure
 Get-ADOrganizationalUnit -Filter * | Select Name, DistinguishedName
 
@@ -110,4 +110,4 @@ Get-ADGroup -Filter * -SearchBase "OU=Groups,DC=corp,DC=local" | ForEach-Object 
     Write-Host "$($_.Name):" -ForegroundColor Yellow
     Get-ADGroupMember $_.Name | Select Name
 }
-\`\`\`
+```
