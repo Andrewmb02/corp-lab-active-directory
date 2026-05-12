@@ -107,8 +107,8 @@ walkthroughs and reflections.
 
 ## About
 
-Built as part of preparation for an IT Support Specialist role. Designed 
-to demonstrate not just technical knowledge but also workflow discipline — 
+This was designed as a part of a passion project to demonstrate not 
+just technical knowledge but also workflow discipline — 
 identity verification before password resets, proper escalation procedures, 
 least-privilege permission models, and clean documentation.
 
