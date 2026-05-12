@@ -6,26 +6,6 @@ Build a realistic AD organizational structure with Organizational Units
 representing functional boundaries, user accounts with proper metadata, 
 and security groups for role-based access control.
 
-## AD Hierarchy
-
-\`\`\`mermaid
-graph TD
-    Forest[Forest: corp.local]
-    Domain[Domain: corp.local]
-    
-    Forest --> Domain
-    
-    Domain --> Employees[OU: Employees]
-    Domain --> IT[OU: IT]
-    Domain --> Servers[OU: Servers]
-    Domain --> Workstations[OU: Workstations]
-    Domain --> Groups[OU: Groups]
-    Domain --> DCs[OU: Domain Controllers - built-in]
-    
-    Employees --> Users[9 user accounts]
-    Groups --> SecurityGroups[5 security groups]
-\`\`\`
-
 ## Organizational Unit Design
 
 | OU | Purpose |
