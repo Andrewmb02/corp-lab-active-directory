@@ -4,8 +4,8 @@
 
 This document captures the gotchas, mistakes, and insights from the build 
 process. It's the file most worth reading for anyone trying to build a 
-similar lab — and the one most worth referencing in interviews when asked 
-"what was challenging?"
+similar lab and being able to answer to "what was the most challenging aspect
+of this lab?" and being able to expand on this.
 
 ## Permission Inheritance Caught Me
 
