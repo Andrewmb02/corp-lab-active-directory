@@ -122,6 +122,105 @@ understand it, not just click through the GUI.
 haven't really learned it. Documentation isn't a separate task from 
 building — it's the second half of building.
 
+## Azure vCPU Quota Forced a Better Architecture
+
+When I tried to add a third VM to the lab (TICKET01 for the helpdesk), 
+Azure rejected the deployment: "Insufficient quota — family limit. 2 vCPUs 
+are needed but only 0 vCPUs of 4 remain for the Standard BS Family." DC01 
+(2 vCPU) plus CLIENT01 (2 vCPU) had consumed my entire B-family allowance 
+in East US.
+
+**The pivot:** Instead of deallocating CLIENT01, I deployed TICKET01 in 
+East US 2, which has its own separate quota pool. This required setting 
+up cross-region VNet peering to connect the two networks — adding genuine 
+multi-region networking to the lab.
+
+**What I learned:** Constraints often force better architectures than the 
+ones I'd have built without them. Cross-region deployment is how real 
+enterprises distribute workloads, and the resulting lab is more impressive 
+than the single-region version would have been. The "workaround" became 
+the feature.
+
+## The `.local` Domain Conflicts with Linux mDNS
+
+After configuring TICKET01 (Ubuntu) to use DC01 as its DNS server, 
+`nslookup dc01.corp.local` returned SERVFAIL — but `dig @10.0.1.4 
+dc01.corp.local` (querying DC01 directly) worked perfectly. The query 
+was being intercepted somewhere before it reached the DC.
+
+**The cause:** RFC 6762 reserves the `.local` TLD for Multicast DNS 
+(Apple Bonjour, Avahi, printer discovery). Modern Linux distributions 
+honor this — systemd-resolved hijacks `.local` queries and tries mDNS 
+on the local subnet instead of forwarding to upstream DNS. Active 
+Directory has used `.local` since the 1990s, predating this RFC. 
+Documented conflict.
+
+**The fix:** A systemd-resolved drop-in config at 
+`/etc/systemd/resolved.conf.d/no-mdns.conf` disables mDNS/LLMNR and 
+explicitly routes corp.local queries to upstream DNS. See 
+`scripts/ticket01-no-mdns.conf` for the reusable file.
+
+**What I learned:** Modern Linux DNS is more complex than 
+`/etc/resolv.conf`. Production AD deployments today should use a 
+real-internet TLD (like corp.example.com) to avoid this issue entirely. 
+This is also a portable fix — any future Linux VM in the lab uses the 
+same config file.
+
+## Windows Server 2025 Enforces LDAP Signing by Default
+
+When I tested LDAP bind from TICKET01 to DC01 (plain LDAP, port 389), 
+it failed with "Strong(er) authentication required (8) — DSID-0C09035C." 
+The credentials were correct — DC01 was refusing the bind because it 
+wasn't encrypted or signed.
+
+**The cause:** Microsoft hardened Windows Server defaults in 2022+ to 
+reject unsigned, unencrypted LDAP binds. This is enforced through Group 
+Policy and overrides the registry setting that controls it.
+
+**The fix path:** I first modified the Default Domain Controllers Policy 
+to set "Domain controller: LDAP server signing requirements" to None — 
+this got the bind working but wasn't the right long-term answer. The 
+correct fix was deploying AD Certificate Services as an Enterprise Root 
+CA, which auto-enrolled a Domain Controller certificate and activated 
+LDAPS on port 636. Authentication moved to encrypted LDAPS, sidestepping 
+the signing requirement entirely.
+
+**What I learned:** When a security control blocks you, the question to 
+ask is "what is this control protecting against, and what's the right 
+way to satisfy it?" rather than "how do I disable it?" In this case the 
+right answer was deploying PKI, not relaxing GPO. The lab now has a 
+working internal CA, which unlocks future projects (LDAPS, encrypted 
+SMB signing, code signing, etc.).
+
+## Knowing When to Stop Fighting a Tool
+
+After all the network, DNS, firewall, and LDAPS pieces verified working 
+at the command line, the osTicket auth-ldap plugin v0.6.2 still had 
+intermittent failures. The Apache error log showed:
+
+```
+TypeError: ldap_close(): Argument #1 ($ldap) must be of type 
+LDAP\Connection, false given
+```
+
+This is a documented PHP 8.x compatibility issue inside the plugin's 
+bundled Net_LDAP2 PEAR library — the old code passes `false` to 
+`ldap_close()` when a connection failed, and PHP 8 strictly rejects 
+that. The plugin partially works (it pulls user attributes from AD 
+successfully) but the full authentication flow is inconsistent.
+
+**The decision:** Rather than patching deprecated PEAR code inside a 
+`.phar` archive, I documented this as a known limitation and identified 
+the production path forward: migrate to OAuth2 authentication via 
+Microsoft Entra ID using osTicket's actively maintained OAuth2 plugin.
+
+**What I learned:** Knowing when to stop trying to fix a tool and pivot 
+to a better tool is itself a skill. The hours that would go into 
+patching a deprecated library are better spent learning a modern 
+alternative — and in interviews, "I hit an upstream bug, documented it 
+honestly, and identified the production path forward" is a stronger 
+answer than "I monkey-patched a PEAR library to make it work."
+
 ## What I'd Do Differently Next Time
 
 1. **Audit permissions immediately after each change**, not in a 
@@ -148,9 +247,14 @@ building — it's the second half of building.
 This lab is the foundation, not the finish line. Future projects 
 building on this:
 
-- **Member server (FILE01)** for proper file share separation
+- **OAuth2 / Entra ID authentication for osTicket** — replaces the 
+  partially-working LDAP plugin with Microsoft's modern auth path
+- **Member server (FILE01)** for proper file share separation away 
+  from the domain controller
 - **Second domain controller (DC02)** for replication and FSMO redundancy
-- **Microsoft Sentinel integration** for log collection and detection
-- **Sysmon deployment** for endpoint visibility
-- **osTicket self-hosted** to add web stack experience
+- **Microsoft Sentinel integration** for log collection and SIEM 
+  experience
+- **Sysmon deployment** for endpoint visibility on CLIENT01
+- **AD CS publishing** of the LDAPS certificate chain to Linux trust 
+  stores (replacing `TLS_REQCERT never` with proper cert validation)
 - **Migrate entire setup to Proxmox** when home lab hardware is built
