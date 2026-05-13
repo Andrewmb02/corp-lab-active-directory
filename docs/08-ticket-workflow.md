@@ -8,14 +8,21 @@ documentation, escalation, and proper closure.
 
 ## System Used
 
-Spiceworks Cloud Help Desk — chosen for:
-- Free tier sufficient for lab purposes
-- Industry recognition (used in small-mid business IT environments)
-- Cloud-hosted (no additional infrastructure needed)
-- Standard ticket workflow features
+**osTicket 1.18.2** — self-hosted on Ubuntu Server 24.04 in Azure, with a LAMP stack (Apache, MariaDB, PHP 8.3). Authentication is integrated with the corp.local Active Directory via encrypted LDAPS, demonstrating end-to-end identity federation between Linux and Windows.
 
-Planned migration: self-hosted osTicket as a future portfolio project to 
-gain experience with web server stack (IIS, PHP, MySQL).
+The original lab plan called for Spiceworks Cloud Help Desk for time-efficiency. The decision to migrate to a self-hosted osTicket deployment added genuine Linux administration, PKI deployment, and cross-region Azure networking to the demonstrated skill set.
+
+See `docs/10-osticket-deployment.md` for the deployment details and `docs/11-cross-region-ad-integration.md` for the AD integration architecture.
+
+### Why osTicket vs Spiceworks Cloud
+
+| Aspect | Spiceworks Cloud | osTicket (chosen) |
+|---|---|---|
+| Hosting | SaaS | Self-hosted on Ubuntu |
+| Cost | Free | Free + Azure VM (~$7/mo) |
+| Authentication | Standalone | LDAPS-integrated with corp.local AD |
+| Skills demonstrated | Configuration only | Linux admin, LAMP stack, PKI, cross-region networking, LDAP integration |
+| Realism | Small business pattern | Mid-size enterprise pattern |
 
 ## Standard Ticket Workflow
 
