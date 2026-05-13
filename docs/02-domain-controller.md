@@ -83,17 +83,6 @@ Name    Domain      IPv4Address
 DC01    corp.local  10.0.1.4
 ```
 
-## Why PowerShell Over GUI
-
-The Server Manager GUI promotion wizard works but is more brittle: it 
-sometimes requires a reboot between role install and promotion, the 
-wizard can fail prerequisites checks for environmental reasons, and the 
-clicks are easy to misremember. The PowerShell approach is:
-
-- One command per phase
-- Self-documenting (you can see exactly what was done)
-- Repeatable for any future DC deployment
-- The same method real admins use in production
 
 ## Troubleshooting Notes
 
