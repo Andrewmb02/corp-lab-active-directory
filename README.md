@@ -70,69 +70,70 @@ graph TB
     style NSG2 fill:#D83B01,color:#fff
 ```
 
-
-
 ## Environment Specifications
 
 | Component | Specification |
-|-----------|---------------|
+| --- | --- |
 | Cloud Provider | Microsoft Azure (Azure for Students) |
-| Region | East US |
+| Regions | East US (HQ) + East US 2 (Branch) |
 | Domain | corp.local |
 | Forest Functional Level | Windows Server 2025 |
-| Domain Controller | Windows Server 2025 Datacenter (Standard_B2ms) |
-| Workstation | Windows Server 2025 Datacenter (Standard_B2s) |
-| Network Segmentation | Single VNet, single subnet, NSG-enforced firewall |
+| AD Sites | HQ-EastUS (10.0.0.0/16), Branch-EastUS2 (10.1.0.0/16) |
+| Site Link | HQ-Branch-Link, cost 100, replication interval 15 min |
+| Domain Controller 1 (HQ) | DC01, Windows Server 2025 Datacenter (Standard_B2ms), 4 of 5 FSMO roles |
+| Domain Controller 2 (Branch) | DC02, Windows Server 2025 Datacenter (Standard_B2s), Infrastructure Master FSMO |
+| Workstation | CLIENT01, Windows Server 2025 Datacenter (Standard_B2s) |
+| File Server | FILE01, Windows Server 2025 Datacenter (Standard_B2als_v2) — in progress |
+| Network Segmentation | Two VNets across regions, NSG-enforced firewall, peering between regions |
 | Ticketing System | osTicket 1.18.2 (self-hosted) |
 | Helpdesk VM | Ubuntu Server 24.04 LTS (Standard_B1s) in East US 2 |
-| Helpdesk VNet | ticket-vnet (10.1.0.0/16), single subnet 10.1.1.0/24 |
-| Cross-region connectivity | VNet peering (ad-vnet ↔ ticket-vnet) |
+| Cross-region connectivity | VNet peering (ad-vnet ↔ TICKET-vnet) |
 | LAMP stack | Apache 2.4, MariaDB 10.x, PHP 8.3 |
 | Certificate Authority | Enterprise Root CA on DC01 (corp-DC01-CA, 5-year validity) |
 | Authentication | LDAPS (port 636) with auto-enrolled DC certificate |
+| Client DNS configuration | All domain members point to both DCs (10.0.1.4, 10.1.1.5) for HA |
 
 ## Skills Demonstrated
 
-- **Active Directory:** Forest/domain creation, OU design, user and group management
-- **PowerShell automation:** Bulk user creation, permission auditing, scripted operations
-- **File services:** SMB share creation, NTFS permission inheritance, RBAC implementation
-- **Group Policy:** GPO authoring, deployment, and verification
-- **Network security:** NSG rule configuration, least-privilege access patterns
-- **Domain operations:** Workstation join, DNS configuration, troubleshooting
-- **Azure administration:** Resource groups, VNets, VMs, cost management
-- **IT support workflow:** Ticket triage, escalation procedures, identity verification practices
-- **Multi-region Azure architecture:** VNet peering, cross-region DNS resolution, region-aware quota management, subnet-scoped NSG design
-- **Linux server administration:** Ubuntu Server 24.04, LAMP stack deployment, SSH key auth, systemd service management, Apache vhost configuration, MariaDB hardening
-- **DNS troubleshooting on Linux:** systemd-resolved drop-in configuration, mDNS/LLMNR/.local conflict resolution, SRV record validation
-- **PKI deployment:** AD Certificate Services as Enterprise Root CA, certificate auto-enrollment, LDAPS configuration on domain controllers
-- **Identity federation:** LDAPS bind from Linux/PHP to AD, simple bind authentication, AD attribute retrieval, cross-OS authentication design
-- **Systematic troubleshooting:** Layer-by-layer diagnosis (network → DNS → protocol → application), use of `dig` / `nslookup` / `nc` / `ldapsearch` to isolate failure points
+- **Active Directory & identity management:** Forest and domain design (corp.local, Windows 2025 functional level); OU hierarchy; user/group lifecycle and bulk operations via PowerShell; multi-DC topology across Azure regions; FSMO role distribution; AD Sites & Services with subnet-to-site mapping and inter-site replication tuning; `repadmin` for replication management and direction control; demonstrated DC failover with HA-aware client DNS
 
+- **Azure cloud infrastructure:** Resource groups, VNets, subnets, NSGs with least-privilege rules; VM deployment across regions; cross-region VNet peering; VM family quota navigation (working around BS Family vCPU cap via Basv2 SKUs); cost-conscious sizing, auto-shutdown discipline, and understanding the difference between Stopped and Stopped (deallocated)
+
+- **Windows Server services:** File services with SMB shares, NTFS permission inheritance, and RBAC tied to AD security groups; Group Policy authoring, deployment, and verification; domain join workflows; DNS configuration and troubleshooting; PowerShell automation for repetitive tasks
+
+- **Linux server administration:** Ubuntu Server 24.04 LTS; LAMP stack (Apache 2.4, MariaDB 10.x, PHP 8.3); systemd service management; SSH key authentication; Apache vhost configuration; MariaDB hardening; systemd-resolved drop-in configuration for mDNS/LLMNR/`.local` conflict resolution
+
+- **PKI and cross-OS identity federation:** AD Certificate Services deployed as Enterprise Root CA; certificate auto-enrollment for DC certificates; LDAPS (port 636) for encrypted directory binds; LDAP bind from Linux/PHP into Active Directory for authentication and attribute retrieval
+
+- **Systematic troubleshooting & IT support workflow:** Layer-by-layer diagnosis (network → DNS → protocol → application) using `dig`, `nslookup`, `nc`, `ldapsearch`, `repadmin`, `dcdiag`, `nltest`; ticket triage and escalation procedures; identity verification before privileged operations (password resets, etc.); documentation discipline producing portfolio-grade build artifacts
 
 ## Repository Structure
 
 ```
 corp-lab-active-directory/
-├── README.md                          ← You are here
+├── README.md                                       ← You are here
 ├── docs/
-│   ├── 01-azure-infrastructure.md     ← Resource group, VNet, NSG setup
-│   ├── 02-domain-controller.md        ← DC01 deployment and promotion
-│   ├── 03-organizational-structure.md ← OUs, users, security groups
-│   ├── 04-file-services.md            ← Shares, NTFS, share permissions
-│   ├── 05-group-policy.md             ← Logon banner GPO
-│   ├── 06-client-workstation.md       ← CLIENT01 deploy + domain join
-│   ├── 07-access-testing.md           ← End-to-end RBAC validation
-│   ├── 08-ticket-workflow.md          ← Ticket workflow + osTicket choice
-│   ├── 09-lessons-learned.md          ← Reflections and gotchas
-│   ├── 10-osticket-deployment.md      ← LAMP + osTicket build
-│   └── 11-cross-region-ad-integration.md  ← VNet peering, DNS, AD CS, LDAPS
+│   ├── 01-azure-infrastructure.md                  ← Resource group, VNet, NSG setup
+│   ├── 02-domain-controller.md                     ← DC01 deployment and promotion
+│   ├── 03-organizational-structure.md              ← OUs, users, security groups
+│   ├── 04-file-services.md                         ← Shares, NTFS, share permissions
+│   ├── 05-group-policy.md                          ← Logon banner GPO
+│   ├── 06-client-workstation.md                    ← CLIENT01 deploy + domain join
+│   ├── 07-access-testing.md                        ← End-to-end RBAC validation
+│   ├── 08-ticket-workflow.md                       ← Ticket workflow + osTicket choice
+│   ├── 09-lessons-learned.md                       ← Reflections and gotchas
+│   ├── 10-osticket-deployment.md                   ← LAMP + osTicket build
+│   ├── 11-cross-region-ad-integration.md           ← VNet peering, DNS, AD CS, LDAPS
+│   ├── 12-dc02-promotion-sites-failover.md         ← Second DC, sites topology, FSMO, failover
+│   └── 13-file01-build.md                          ← Member file server build (in progress)
 ├── scripts/
-│   ├── create-users.ps1               ← Bulk user creation
-│   ├── audit-permissions.ps1          ← NTFS permission audit
-│   ├── reset-lab-passwords.ps1        ← Password reset utility
-│   ├── dc01-firewall-rules.ps1        ← AD port allowances for ticket-vnet
-│   └── ticket01-no-mdns.conf          ← systemd-resolved drop-in
-└── screenshots/                       ← Visual evidence (TBD)
+│   ├── create-users.ps1                            ← Bulk user creation
+│   ├── audit-permissions.ps1                       ← NTFS permission audit
+│   ├── reset-lab-passwords.ps1                     ← Password reset utility
+│   ├── dc01-firewall-rules.ps1                     ← AD port allowances for ticket-vnet
+│   └── ticket01-no-mdns.conf                       ← systemd-resolved drop-in
+├── session-notes/
+└── screenshots/                                    ← Visual evidence (TBD)
 ```
 
 ## Quick Stats
@@ -177,8 +178,14 @@ See `docs/10-osticket-deployment.md` for the helpdesk build, and
 
 ## Status
 
-Lab is operational. Documentation is being expanded with detailed 
-walkthroughs and reflections.
+Lab is operational with multi-DC, multi-region topology and member file server.
+Demonstrated failover of domain services from DC01 to DC02 with no loss of
+operations from CLIENT01. FSMO roles distributed across both DCs. FILE01
+hosting file shares with auditing enabled and feeding the upcoming
+observability pipeline.
+
+**Next planned work:** WEC01 + Splunk buildout for centralized event
+collection and SOC dashboards.
 
 ## About
 
