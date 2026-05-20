@@ -21,49 +21,56 @@ support roles.
 graph TB
     Internet[Internet]
     Home[Home Workstation<br/>Restricted IP Access]
-    
+
     Internet --> NSG1
     Internet --> NSG2
     Home -.->|RDP allowed| NSG1
     Home -.->|SSH/HTTP allowed| NSG2
-    
-    subgraph EastUS[Region: East US]
+
+    subgraph EastUS["Region: East US (HQ-EastUS site)"]
         NSG1[ad-nsg<br/>RDP from home IP only]
-        
+
         subgraph ADVNet[ad-vnet 10.0.0.0/16]
             subgraph ADSubnet[ad-subnet 10.0.1.0/24]
-                DC[DC01<br/>Windows Server 2025<br/>10.0.1.4<br/>AD DS + DNS + AD CS]
-                Client[CLIENT01<br/>Windows Server 2025<br/>Domain-joined workstation]
+                DC[DC01<br/>Windows Server 2025<br/>10.0.1.4<br/>AD DS + DNS + AD CS<br/>4 of 5 FSMO roles]
+                Client[CLIENT01<br/>Windows Server 2025<br/>10.0.1.5<br/>Domain-joined workstation]
+                File[FILE01<br/>Windows Server 2025<br/>10.0.1.6<br/>Member file server<br/>BUILD IN PROGRESS]
             end
         end
-        
+
         NSG1 --> DC
         NSG1 --> Client
-        Client -->|Authenticates via Kerberos| DC
     end
-    
-    subgraph EastUS2[Region: East US 2]
+
+    subgraph EastUS2["Region: East US 2 (Branch-EastUS2 site)"]
         NSG2[ticket-nsg<br/>SSH/HTTP from home IP only]
-        
-        subgraph TicketVNet[ticket-vnet 10.1.0.0/16]
+
+        subgraph TicketVNet[TICKET-vnet 10.1.0.0/16]
             subgraph TicketSubnet[ticket-subnet 10.1.1.0/24]
                 Ticket[TICKET01<br/>Ubuntu 24.04 LTS<br/>10.1.1.4<br/>LAMP + osTicket]
+                DC2[DC02<br/>Windows Server 2025<br/>10.1.1.5<br/>AD DS + DNS + GC<br/>Infrastructure Master FSMO]
             end
         end
-        
+
         NSG2 --> Ticket
     end
-    
-    ADVNet <==>|VNet Peering Connected| TicketVNet
+
+    ADVNet <==>|VNet Peering| TicketVNet
+    DC <==>|AD Replication via HQ-Branch-Link| DC2
     Ticket ==>|LDAPS port 636 TLS-encrypted| DC
-    Ticket -.->|DNS via custom resolver| DC
-    
+    Client -.->|Kerberos primary or DC02 failover| DC
+    File -.->|Kerberos primary or DC02 failover| DC
+
     style DC fill:#0078D4,color:#fff
+    style DC2 fill:#0078D4,color:#fff
     style Client fill:#107C10,color:#fff
+    style File fill:#7B61FF,color:#fff
     style Ticket fill:#E95420,color:#fff
     style NSG1 fill:#D83B01,color:#fff
     style NSG2 fill:#D83B01,color:#fff
 ```
+
+
 
 ## Environment Specifications
 
