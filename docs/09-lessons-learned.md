@@ -241,6 +241,57 @@ answer than "I monkey-patched a PEAR library to make it work."
 
 5. **Use Mermaid diagrams in documentation from the start** — much faster 
    than going back and adding visual aids later.
+---
+
+## DC02 Build + FILE01 Phase 1 (2026-05-18)
+
+### After a DC promotion, only domain accounts work
+The local admin account used during member-server provisioning is destroyed
+when that server is promoted to a DC. RDP attempts with the original local
+credentials fail silently as "logon attempt failed" — confusing without this
+context. Always switch to using the domain admin (UPN format preferred)
+immediately after promotion.
+
+### UPN format is more reliable than NetBIOS for AD wizards
+`labadmin@corp.local` consistently beat `corp\labadmin` across multiple
+operations in this domain — promotion wizard credential leg-two (Kerberos
+site enumeration), nested RDP credential prompts, and PowerShell
+`Get-Credential`. Default to UPN when both formats are accepted.
+
+### Pre-promotion subnet mapping pays compound interest
+Configuring AD Sites & Services BEFORE promoting DC02 meant DC02
+auto-classified into Branch-EastUS2 at promotion time, with no manual server
+object move required. Same pattern repeated successfully for FILE01 a
+session later — `nltest /dsgetdc:corp.local` reported correct
+`Our Site Name: HQ-EastUS` even before domain join.
+
+### Replication direction in `repadmin /syncall` matters
+`/P` flag pushes from local DC to partners. Omit `/P` to pull into target.
+Reversing direction can propagate unwanted changes — a deletion got pushed
+the wrong way before being caught during the Phase 4 demo. The correct
+command for "make DC02 catch up to DC01's state" is
+`repadmin /syncall DC02.corp.local /AeD` (no /P).
+
+### Password complexity includes display name tokens
+With `ComplexityEnabled=True`, passwords cannot contain any 3+ character
+token from the user's `displayName`. A user named "Replication Test User"
+cannot have "Test" anywhere in its password. This is not in the
+`MinPasswordLength` field — `Get-ADDefaultDomainPasswordPolicy` can report
+`MinPasswordLength: 0` while still rejecting passwords for complexity
+reasons.
+
+### HA at the DC layer is meaningless without HA at the client DNS layer
+A redundant DC pair provides nothing if clients only know about one DC.
+CLIENT01's DNS originally pointed at only DC01 — when DC01 was deallocated
+for failover testing, all domain operations from CLIENT01 failed (nltest
+returned `ERROR_NO_SUCH_DOMAIN`) until DNS was updated to include DC02.
+Every domain member's NIC DNS should list all DCs from provisioning time.
+In production this would be enforced via DHCP scope options or GPO.
+
+
+
+
+
 
 ## What's Next
 
